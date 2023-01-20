@@ -2,7 +2,9 @@ import fontforge
 import os.path
 import sys
 
-sys.path.append(os.path.expanduser("~") + "/.FontForge/python")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
+
 import GuessMarkToMarkGaps
 import InitHebrewGlyphData
 import utils
@@ -27,8 +29,6 @@ import utils
 # 
 # This script was developed and tested with build 20120731.
 # Script version: 20 Nov 2017.
-
-script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def AddHebrewMarkToMarkGPOS(font):
 
@@ -91,7 +91,7 @@ def AddHolamRafeGPOS(font):
     for glyph_class in InitHebrewGlyphData.GetGlyphEquiv():
 
         (holam_anchor_class, holam_basewidth) = utils.GetClassProperty(font, glyph_class, "DiaToBaseO")
-	(rafe_anchor_class, rafe_basewidth) = utils.GetClassProperty(font, glyph_class, "RafeToBase")
+        (rafe_anchor_class, rafe_basewidth) = utils.GetClassProperty(font, glyph_class, "RafeToBase")
 
         if holam_anchor_class is None:
             holam_anchor_class = 0
@@ -175,7 +175,7 @@ def AddHebrewContextualGPOS(unused, font):
                 gap = utils.GetMarkToMarkGap(font, left_mark, right_mark)
 
                 if gap is None:
-                    print ["No gap", left_mark, right_mark]
+                    print("No gap", left_mark, right_mark)
                     continue
 
                 width_list.append(right_width + gap + left_width)

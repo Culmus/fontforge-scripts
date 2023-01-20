@@ -1,9 +1,9 @@
 import fontforge
+import os.path
 import sys
-from os.path import expanduser
 
-home = expanduser("~")
-sys.path.append(home + "/.FontForge/python")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
 
 import CreatePrecomposedGlyphs
 import Kern2Comments

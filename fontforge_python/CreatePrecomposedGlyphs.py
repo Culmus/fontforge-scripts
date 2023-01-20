@@ -3,7 +3,9 @@ import psMat
 import os.path
 import sys
 
-sys.path.append(os.path.expanduser("~") + "/.FontForge/python")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
+
 import InitHebrewGlyphData
 import utils
 

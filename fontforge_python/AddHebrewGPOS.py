@@ -2,7 +2,9 @@ import fontforge
 import os.path
 import sys
 
-sys.path.append(os.path.expanduser("~") + "/.FontForge/python")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
+
 import InitHebrewGlyphData
 import AddHebrewContextualGPOS
 import utils
@@ -27,8 +29,6 @@ import utils
 # 
 # This script was developed and tested with build 20120731.
 # Script version: 20 Nov 2017.
-
-script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def AddHebrewGPOS(unused, font):
 

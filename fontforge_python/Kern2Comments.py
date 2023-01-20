@@ -2,7 +2,9 @@ import fontforge
 import os.path
 import sys
 
-sys.path.append(os.path.expanduser("~") + "/.FontForge/python")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(script_dir)
+
 import InitHebrewGlyphData
 import utils
 
@@ -15,7 +17,7 @@ def Kern2Comments(unused, font):
         for glyph in glyph_class:
 
             if glyph not in font:
-                print "Missing glyph: " + glyph
+                print("Missing glyph: " + glyph)
                 continue
 
             # For each consonant build a map: vowel_name => X-kerning
