@@ -78,7 +78,7 @@ def AddHebrewGPOS(unused, font):
     for glyph in font.selection.byGlyphs:
 
         # Find the dagesh reference transformation
-        dagesh_ref_trf = (ref[1] for ref in glyph.references if ref[0] == "afii57807").next()
+        dagesh_ref_trf = next(ref[1] for ref in glyph.references if ref[0] == "afii57807")
 
         # Find the base glyph
         if (glyph.glyphname == "uniE805"):

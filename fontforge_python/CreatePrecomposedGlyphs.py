@@ -27,8 +27,8 @@ def AddConsonantVowel(font, consonant, vowel, result):
     font[result].clear()
 
     # Retrieve the vowel location from comments
-    vowel_class = (key for key, value in InitHebrewGlyphData.GetVowelEquiv().items()
-                       if (vowel in value)).next()
+    vowel_equiv_items = InitHebrewGlyphData.GetVowelEquiv().items()
+    vowel_class = next((key for key, value in vowel_equiv_items if (vowel in value)))
     anchor_pos = utils.GetGlyphCommentProperty(font[consonant], vowel_class)
 
     if anchor_pos is None:

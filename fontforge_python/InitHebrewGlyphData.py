@@ -176,13 +176,13 @@ def GetLeftKernEquiv():
 
     rlist = GetRightKernEquiv()
 
-    zayin_idx = (i for i,elem in enumerate(rlist) if elem[0] == "afii57670").next()
+    zayin_idx = next((i for i,elem in enumerate(rlist) if elem[0] == "afii57670"))
     rlist[zayin_idx] = ["afii57670"]
 
-    period_idx = (i for i,elem in enumerate(rlist) if elem[0] == "period").next()
+    period_idx = next((i for i,elem in enumerate(rlist) if elem[0] == "period"))
     del rlist[period_idx]
 
-    colon_idx = (i for i,elem in enumerate(rlist) if elem[0] == "colon").next()
+    colon_idx = next((i for i,elem in enumerate(rlist) if elem[0] == "colon"))
     del rlist[colon_idx]
 
     return rlist
