@@ -21,7 +21,7 @@ def Kern2Comments(unused, font):
                 continue
 
             # For each consonant build a map: vowel_name => X-kerning
-            kernings = {data[2] : data[9] for data in font[glyph].getPosSub("_Diakern") if data[1] == "Pair"}
+            kernings = {data[2] : data[3] for data in font[glyph].getPosSub("_Diakern") if data[1] == "Pair"}
 
             for vowel, xkern in kernings.items():
                 vowel_class = next((c for c, l in InitHebrewGlyphData.GetVowelEquiv().items() if vowel in l), None)
