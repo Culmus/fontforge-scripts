@@ -6,7 +6,7 @@ def GetGlyphEquiv():
              ["afii57666", "uniFB32"], # Gimel
              ["afii57667", "uniFB33"], # Dalet
              ["afii57668", "uniFB34"], # He
-             ["afii57669", "afii57723"], # Vav
+             ["afii57669", "uniFB35"], # Vav
              ["afii57670", "uniFB36"], # Zayin
              ["afii57671", "uniFB37"], # Het
              ["afii57672", "uniFB38"], # Tet
@@ -143,11 +143,11 @@ def GetRightKernEquiv():
              ["afii57666", "uniFB32"],            # Gimel
              ["afii57667", "uniFB22", "uniFB33"], # Dalet
              ["afii57668", "uniFB23", "uniFB34"], # He
-             ["afii57669", "afii57716", "uniE801", "uniFB35", "afii57700"], # Vav
+             ["afii57669", "afii57716", "uniE801", "uniFB35", "uniFB4B"], # Vav
              ["afii57670", "uniFB36"],            # Zayin
              ["afii57671", "uniFB37"],            # Het
              ["afii57672", "uniFB38"],            # Tet
-             ["afii57673", "afii57717", "afii57718", "uniE804", "uniFB1D", "afii57705", "uniFB39"], # Yod
+             ["afii57673", "afii57717", "afii57718", "uniE804", "uniFB1D", "uniFB1F", "uniFB39"], # Yod
              ["afii57674", "uniE802", "uniE803", "uniFB3A"], # Final Kaf
              ["afii57675", "uniFB24", "uniFB3B", "uniFB4D"], # Kaf
              ["afii57676", "uniFB25", "uniFB3C"], # Lamed
@@ -164,7 +164,7 @@ def GetRightKernEquiv():
              ["afii57686", "uniFB46"],            # Tsadi
              ["afii57687", "uniFB47"],            # Quf
              ["afii57688", "uniFB48"],            # Resh
-             ["afii57689", "uniFB49", "afii57694", "afii57695", "uniFB2C", "uniFB2D"],    # Shin
+             ["afii57689", "uniFB49", "uniFB2A", "uniFB2B", "uniFB2C", "uniFB2D"],    # Shin
              ["afii57690", "uniFB28", "uniFB4A"], # Tav
              ["quotesingle", "quotedbl", "uni05F3", "uni05F4", "quoteright", "quotedblright"], # quote
              ["period", "comma", "ellipsis"],

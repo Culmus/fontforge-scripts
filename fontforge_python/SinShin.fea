@@ -1,8 +1,8 @@
 
 lookup ccmpSinShin {
   lookupflag RightToLeft;
-    sub \afii57689 \afii57804  by \afii57694;
-    sub \afii57689 \afii57803  by \afii57695;
+    sub \afii57689 \afii57804  by \uniFB2A;
+    sub \afii57689 \afii57803  by \uniFB2B;
     sub \uniFB49 \afii57804  by \uniFB2C;
     sub \uniFB2A \afii57807  by \uniFB2C;
     sub \afii57689 \afii57804 \afii57807  by \uniFB2C;

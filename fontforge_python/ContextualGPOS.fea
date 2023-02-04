@@ -1,4 +1,4 @@
-@Base = [\afii57664 - \afii57690 \uni25CC \uniE805 \uniFB20 \uniFB2A - \uniFB2D \uniFB30 - \uniFB34 \afii57723 \uniFB36 - \uniFB3F \uniFB40 - \uniFB4A];
+@Base = [\afii57664 - \afii57690 \uni25CC \uniE805 \uniFB20 \uniFB2A - \uniFB2D \uniFB30 - \uniFB39 \uniFB3A - \uniFB3F \uniFB40 - \uniFB49 \uniFB4A];
 @NoLowerMark = [\afii57806 \uni05BA \afii57807 \afii57841 \afii57804 \afii57803 \uni05C4 \uniFB1E];
 @LowerVowel1 = [\afii57799 \afii57793];
 @LowerVowel2 = [\afii57794 \afii57795 \afii57798 \afii57797 \uni05C7];

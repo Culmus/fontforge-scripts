@@ -5,7 +5,7 @@ lookup ccmpYiddish1 {
 
 lookup ccmpYiddish_dflt {
   lookupflag RightToLeft;
-    sub \afii57718 \afii57798  by \afii57705;
+    sub \afii57718 \afii57798  by \uniFB1F;
 #   sub \afii57665 \afii57841  by \uniFB4C; # letters with rafe are processed in GPOS
 #   sub \afii57675 \afii57841  by \uniFB4D;
 #   sub \afii57684 \afii57841  by \uniFB4E;
@@ -22,8 +22,8 @@ lookup ccmpYiddish3 {
     sub \afii57669 \afii57669  by \afii57716;
     sub \afii57669 \afii57673  by \afii57717;
     sub \afii57673 \afii57673  by \afii57718;
-    sub \afii57718 \afii57798  by \afii57705;
-    sub \afii57673 \afii57673 \afii57798  by \afii57705;
+    sub \afii57718 \afii57798  by \uniFB1F;
+    sub \afii57673 \afii57673 \afii57798  by \uniFB1F;
     sub \afii57664 \afii57798  by \uniFB2E;
     sub \afii57664 \afii57797  by \uniFB2F;
     sub \afii57665 \afii57841  by \uniFB4C;
