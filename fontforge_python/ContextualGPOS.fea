@@ -96,13 +96,13 @@ lookup BaseDiac {
   subtable;
     pos @Base @NoLowerMark @NoLowerMark @LowerVowel3Narrow' lookup CtxAnchors_M_D3Narrow [\afii57839] ;
   subtable;
-    pos @Base [\afii57839]' lookup CtxAnchors_D1_M \uni034F @LowerVowel1 ;
+    pos @Base [\meteg.right]' lookup CtxAnchors_D1_M @LowerVowel1 ;
   subtable;
-    pos @Base [\afii57839]' lookup CtxAnchors_D2_M \uni034F @LowerVowel2 ;
+    pos @Base [\meteg.right]' lookup CtxAnchors_D2_M @LowerVowel2 ;
   subtable;
-    pos @Base [\afii57839]' lookup CtxAnchors_D2Narrow_M \uni034F @LowerVowel2Narrow ;
+    pos @Base [\meteg.right]' lookup CtxAnchors_D2Narrow_M @LowerVowel2Narrow ;
   subtable;
-    pos @Base [\afii57839]' lookup CtxAnchors_D3Narrow_M \uni034F @LowerVowel3Narrow ;
+    pos @Base [\meteg.right]' lookup CtxAnchors_D3Narrow_M @LowerVowel3Narrow ;
   subtable;
     pos @Base [\afii57841]' lookup CtxAnchors_Rafe [\afii57806] ;
   subtable;

@@ -20,7 +20,7 @@ lookup NarrowVowelMeteg {
   subtable;
     sub @Base @NoLowerMark @NoLowerMark @LowerVowel3' lookup WideMarkToNarrow \afii57839;
   subtable;
-    sub @Base \afii57839 \uni034F @LowerVowel3' lookup WideMarkToNarrow;
+    sub @Base \meteg.right @LowerVowel3' lookup WideMarkToNarrow;
   subtable;
     sub @NarrowBase @LowerVowel2' lookup WideMarkToNarrow \afii57839;
   subtable;
@@ -28,7 +28,7 @@ lookup NarrowVowelMeteg {
   subtable;
     sub @NarrowBase @NoLowerMark @NoLowerMark @LowerVowel2' lookup WideMarkToNarrow \afii57839;
   subtable;
-    sub @NarrowBase \afii57839 \uni034F @LowerVowel2' lookup WideMarkToNarrow;
+    sub @NarrowBase \meteg.right @LowerVowel2' lookup WideMarkToNarrow;
 } NarrowVowelMeteg;
 
 feature ccmp {

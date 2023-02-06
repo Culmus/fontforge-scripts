@@ -10,6 +10,7 @@ lookup ccmpCustomPrecomp {
     sub \afii57801 \afii301 \afii57839  by \uniE806; # hataf-segol + ZWJ + meteg
     sub \afii57800 \afii301 \afii57839  by \uniE807; # hataf-patah + ZWJ + meteg
     sub \afii57802 \afii301 \afii57839  by \uniE808; # hataf-qamats + ZWJ + meteg
+    sub \afii57839 \uni034F by \meteg.right;         # meteg + CGJ
 } ccmpCustomPrecomp;
 
 feature ccmp {

@@ -37,7 +37,7 @@ def GetGlyphEquiv():
 def GetVowelEquiv():
 
     return { # Single width diacritics
-             "DiaToBase1" : ["afii57799", "afii57793", "afii57839"],
+             "DiaToBase1" : ["afii57799", "afii57793", "afii57839", "meteg.right"],
              # Double width diacritics
              "DiaToBase2" : ["afii57794", "afii57795", "afii57798", "afii57797", "uni05C7"],
              # Triple width diacritics
@@ -65,7 +65,7 @@ def GetVowelLeftEquiv():
              # Bar shape at the left side (like patah)
              ["afii57798", "afii57797", "uni05C7", "afii57800", "afii57802"],
              # Column shape at the left side (like meteg)
-             ["afii57839"],
+             ["afii57839", "meteg.right"],
              # Dot shape at the left side - narrow glyph
              ["uniE806", "tsere.narrow", "segol.narrow", "hatafsegol.narrow", "afii57796"],
              # Bar shape at the left side - narrow glyph
@@ -83,7 +83,7 @@ def GetVowelRightEquiv():
              # Bar shape at the right side (like patah)
              "BarToBaseMark" : ["afii57798", "afii57797", "uni05C7"],
              # Column shape at the right side (like meteg)
-             "ColumnToBaseMark" : ["afii57839"],
+             "ColumnToBaseMark" : ["afii57839", "meteg.right"],
              # Dot shape at the right side - narrow glyph
              "DotToBaseNarrowMark" : ["tsere.narrow", "segol.narrow"],
              # 2 dots shape at the right side - narrow glyph
@@ -109,16 +109,16 @@ def GetMarkCombinations():
              "CtxAnchors_M_D3Narrow" : ["DiaToBase4", ["afii57839"],
                  ["hatafsegol.narrow", "hatafpatah.narrow", "hatafqamats.narrow"] + GetVowelEquiv()["DiaToBaseU"]],
              # 1-wide vowel (left) with meteg (right)
-             "CtxAnchors_D1_M" : ["DiaToBase2", GetVowelEquiv()["DiaToBase1"], ["afii57839"]],
+             "CtxAnchors_D1_M" : ["DiaToBase2", GetVowelEquiv()["DiaToBase1"], ["meteg.right"]],
              # 2-wide vowel (left) with meteg (right)
-             "CtxAnchors_D2_M" : ["DiaToBase3", GetVowelEquiv()["DiaToBase2"], ["afii57839"]],
+             "CtxAnchors_D2_M" : ["DiaToBase3", GetVowelEquiv()["DiaToBase2"], ["meteg.right"]],
              # 2-wide narrow vowel (left) with meteg (right)
              "CtxAnchors_D2Narrow_M" : ["DiaToBase3",
-                 ["tsere.narrow", "segol.narrow", "patah.narrow", "qamats.narrow"], ["afii57839"]],
+                 ["tsere.narrow", "segol.narrow", "patah.narrow", "qamats.narrow"], ["meteg.right"]],
              # 3-wide narrow vowel (left) with meteg (right)
              "CtxAnchors_D3Narrow_M" : ["DiaToBase4",
                  ["hatafsegol.narrow", "hatafpatah.narrow", "hatafqamats.narrow"] + GetVowelEquiv()["DiaToBaseU"],
-                 ["afii57839"]]
+                 ["meteg.right"]]
            }
 
 # Mark side shapes [shape from left, shape from right]

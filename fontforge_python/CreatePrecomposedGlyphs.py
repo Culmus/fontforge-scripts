@@ -133,6 +133,10 @@ def CreatePrecomposedGlyphs(unused, font):
     AddConsonantVowel(font, "afii57675", "afii57841", "uniFB4D") # kaf-rafe
     AddConsonantVowel(font, "afii57684", "afii57841", "uniFB4E") # pe-rafe
 
+    # Right-side meteg is identical to the ordinary meteg,
+    # but bears different anchors
+    AddByPartialCopy(font, "afii57839", "meteg.right", [0])
+
     if ToDo("hatafsegol.narrow"):
         AddNarrowHataf(font, "uniE806", "hatafsegol.narrow")
     if ToDo("hatafpatah.narrow"):
