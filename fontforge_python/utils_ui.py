@@ -27,6 +27,7 @@ def RadioUI(label, choices, default_idx):
     tk.Button(root, text="OK", command = root.destroy).grid(row=len(choices) + 1)
     tk.Button(root, text="Cancel", command = CancelPressed).grid(column=1, row=len(choices) + 1)
 
+    root.eval('tk::PlaceWindow . center')
     root.mainloop()
 
     return v.get()
