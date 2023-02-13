@@ -31,6 +31,7 @@ import utils
 # Script version: 20 Nov 2017.
 
 def AddHebrewGPOS(unused, font):
+    FixLegacyComments(font)
 
     # Cleanup old lookups
     lookups = font.gpos_lookups
@@ -90,3 +91,14 @@ def AddHebrewGPOS(unused, font):
         base.addAnchorPoint("DiaToBaseD", "base", dagesh_ref_trf[4], dagesh_ref_trf[5])
 
     AddHebrewContextualGPOS.AddHebrewContextualGPOS(unused, font)
+
+def FixLegacyComments(font):
+    # Check if an old comment is present
+    old_rafe = (utils.GetGlyphCommentProperty(font["afii57664"], "RafeToBase") is not None)
+
+    if old_rafe:
+        for glyph in font:
+            c = utils.GetGlyphCommentProperty(font[glyph], "RafeToBase")
+            if c is not None:
+                utils.SetGlyphCommentProperty(font[glyph], "UpperToBase", c)
+                utils.SetGlyphCommentProperty(font[glyph], "RafeToBase", None)

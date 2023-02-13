@@ -85,13 +85,13 @@ def AddHolamRafeGPOS(font):
     gap   = utils.GetMarkToMarkGap(font, "patah.narrow", "tsere.narrow")
     center_to_center = gap + (holam_width + rafe_width) / 2
 
-    for mark in InitHebrewGlyphData.GetVowelEquiv()["RafeToBase"]:
+    for mark in InitHebrewGlyphData.GetVowelEquiv()["UpperToBase"]:
         font[mark].addAnchorPoint("CtxAnchors_Rafe", "mark", 0, 0)
 
     for glyph_class in InitHebrewGlyphData.GetGlyphEquiv():
 
         (holam_anchor_class, holam_basewidth) = utils.GetClassProperty(font, glyph_class, "DiaToBaseO")
-        (rafe_anchor_class, rafe_basewidth) = utils.GetClassProperty(font, glyph_class, "RafeToBase")
+        (rafe_anchor_class, rafe_basewidth) = utils.GetClassProperty(font, glyph_class, "UpperToBase")
 
         if holam_anchor_class is None:
             holam_anchor_class = 0
@@ -124,13 +124,13 @@ def AddShinDotRafeGPOS(font):
     gap   = utils.GetMarkToMarkGap(font, "afii57793", "afii57798") # hiriq-patah
     center_to_center = gap + (sdot_width + rafe_width) / 2
 
-    for mark in InitHebrewGlyphData.GetVowelEquiv()["RafeToBase"]:
+    for mark in InitHebrewGlyphData.GetVowelEquiv()["UpperToBase"]:
         font[mark].addAnchorPoint("CtxAnchors_Rafe", "mark", 0, 0)
 
     shindot_pos = (shdot.left_side_bearing - shdot.right_side_bearing) / 2
     sindot_pos = (sdot.left_side_bearing - sdot.right_side_bearing) / 2
 
-    rafe_anchor = utils.GetClassProperty(font, ["afii57689"], "RafeToBase")[0]
+    rafe_anchor = utils.GetClassProperty(font, ["afii57689"], "UpperToBase")[0]
     rafe_pos = (rafe.left_side_bearing - rafe.right_side_bearing) / 2 + rafe_anchor
 
     shin_rafe_displacement = shindot_pos - rafe_pos - center_to_center

@@ -1,5 +1,5 @@
 @LowerMark = [\afii57793 \afii57794 \afii57795 \afii57796 \afii57797 \afii57798 \afii57799 \afii57800 \afii57801 \afii57802 \uni05C7 \afii57839 \meteg.right];
-@NoLowerMark = [\afii57806 \uni05BA \afii57807 \afii57841 \afii57804 \afii57803 \uni05C4 \uniFB1E];
+@NoLowerMark = [\uni05AB \afii57806 \uni05BA \afii57807 \afii57841 \afii57804 \afii57803 \uni05C4 \uniFB1E];
 
 lookup AltAyin {
   lookupflag RightToLeft;

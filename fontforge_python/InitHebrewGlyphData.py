@@ -51,7 +51,7 @@ def GetVowelEquiv():
              # Dagesh
              "DiaToBaseD" : ["afii57807"],
              # Rafe
-             "RafeToBase" : ["afii57841", "uniFB1E"]
+             "UpperToBase" : ["uni05AB", "afii57841", "uniFB1E"]
            }
 
 # Vowels left shape equivalence list
