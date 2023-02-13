@@ -5,14 +5,19 @@ def SetGlyphCommentProperty(glyph, prop, value):
 
     try:
         value = int(value)
-    except ValueError:
+    except Exception:
         pass # Do nothing, retain existing value
 
     props = glyph.comment.split("\n")
     prop_idx = next((i for i, elem in enumerate(props) if elem.startswith("%" + prop + "=")), None)
 
-    if prop_idx is None:
+    if prop_idx is None and value is None:
+        pass
+    elif prop_idx is None:
         props.append("%" + prop + "=" + str(value))
+    elif value is None:
+        # Remove the comment
+        props.pop(prop_idx)
     else:
         props[prop_idx] = "%" + prop + "=" + str(value)
 
