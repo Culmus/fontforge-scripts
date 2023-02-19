@@ -26,7 +26,20 @@ def Contours(glyph):
         return (bb[2] - bb[0]) * (bb[3] - bb[1])
 
     # Sort contous by size of bounding box
-    return sorted(glyph.foreground, key=lambda c: contour_area(c))
+    contours = sorted(glyph.foreground, key=lambda c: contour_area(c))
+
+    # Remove contours fully enclosed inside other contours, they are not
+    # representative of either accent or body position
+    for i in reversed(range(len(contours))):
+        bb = contours[i].boundingBox()
+        # Remove contour i if it's fully inside some bigger contour
+        for j in range(i + 1, len(contours)):
+            BB = contours[j].boundingBox()
+            if bb[0] > BB[0] and bb[1] > BB[1] and bb[2] < BB[2] and bb[3] < BB[3]:
+                contours.pop(i)
+                break
+
+    return contours
 
 # Ask user to select a source font for latin glyphs among the currently
 # opened fonts.
