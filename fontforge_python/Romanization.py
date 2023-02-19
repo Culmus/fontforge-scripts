@@ -63,35 +63,36 @@ def BuildRomanization(unused, font):
     if (latin_font is None):
         return
 
-    MakeLowerDot(latin_font, font)
+    MakeLowerAccent("dotbelowcomb", latin_font, "idieresis", font)
+    MakeLowerAccent("uni0331", latin_font, "amacron", font) # "COMBINING MACRON BELOW"
 
     # TODO: build romanization support glyphs
 
-def MakeLowerDot(source_font, target_font):
-    code = fontforge.unicodeFromName("dotbelowcomb")
+def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
+    code = fontforge.unicodeFromName(accent_name)
 
-    if "dotbelowcomb" in source_font and source_font["dotbelowcomb"].isWorthOutputting():
+    if accent_name in source_font and source_font[accent_name].isWorthOutputting():
         CopyGlyph(code, source_font, target_font)
     else:
-        # Use "i dieresis" as a reference glyph
-        i_contours = Contours(source_font["idieresis"])
-        i_dot = i_contours[0]
-        i_body = i_contours[-1]
+        # Extract elements from the reference glyph
+        src_contours = Contours(source_font[source_ref_name])
+        src_accent = src_contours[0]
+        src_body = src_contours[-1]
 
-        # Distance between the lower dot and the baseline
-        descending_dist = i_dot.boundingBox()[1] - i_body.boundingBox()[3]
+        # Distance between the lower accent and the glyph
+        descending_dist = src_accent.boundingBox()[1] - src_body.boundingBox()[3]
 
         # Reset target glyph
         target_glyph = target_font.createChar(code)
         target_glyph.clear()
 
-        # Copy dot from i_dieresis
+        # Copy accent from source glyph
         pen = target_glyph.glyphPen()
-        i_dot.draw(pen)
+        src_accent.draw(pen)
         pen = None
 
-        # Move dot to the lower position (negative delta)
-        delta_y = - i_dot.boundingBox()[3] - descending_dist
+        # Move accent to the lower position (negative delta)
+        delta_y = src_body.boundingBox()[1] - src_accent.boundingBox()[3] - descending_dist
         target_glyph.transform(psMat.translate(0, delta_y))
 
         # center the resulting glyph
@@ -99,4 +100,4 @@ def MakeLowerDot(source_font, target_font):
         target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
         target_glyph.width = 0
 
-        target_glyph.glyphname = "dotbelowcomb"
+        target_glyph.glyphname = accent_name
