@@ -2,6 +2,7 @@ import fontforge
 import os.path
 import psMat
 import sys
+import unicodedata
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
@@ -66,7 +67,13 @@ def BuildRomanization(unused, font):
     MakeLowerAccent("dotbelowcomb", latin_font, "idieresis", font)
     MakeLowerAccent("uni0331", latin_font, "amacron", font) # "COMBINING MACRON BELOW"
 
-    # TODO: build romanization support glyphs
+    code = 0x1E25 # h + lower dot
+    MakeAccentedCharacter(font, code)
+
+    code = 0x1E6D # t + lower dot
+    MakeAccentedCharacter(font, code)
+
+    # TODO: build more romanization support glyphs
 
 def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
     code = fontforge.unicodeFromName(accent_name)
@@ -101,3 +108,30 @@ def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
+
+def MakeAccentedCharacter(font, code):
+    unistr = chr(code)
+
+    # Get Unicode components by canonical decomposition
+    norm = unicodedata.normalize("NFD", unistr)
+    base_code = ord(norm[0])
+    accent_code = ord(norm[1])
+    base_name = fontforge.nameFromUnicode(base_code)
+    accent_name = fontforge.nameFromUnicode(accent_code)
+
+    # Horizontal accent position
+    base_bb = font[base_name].boundingBox()
+    x_accent = (base_bb[2] + base_bb[0]) / 2
+
+    # Initialize target character
+    target_char = font.createChar(code)
+    target_char.clear()
+    pen = target_char.glyphPen()
+
+    # Add references to the base character and to the accent
+    pen.addComponent(base_name, psMat.identity())
+    pen.addComponent(accent_name, psMat.translate(x_accent, 0))
+    pen = None
+
+    target_char.width = font[base_name].width
+    target_char.glyphname = fontforge.nameFromUnicode(code)
