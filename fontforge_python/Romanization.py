@@ -7,6 +7,7 @@ import unicodedata
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
 
+import utils
 import utils_ui
 
 # Copy glyph between fonts
@@ -51,7 +52,7 @@ def SelectLatinFont():
 
     result = utils_ui.RadioUI("Select Latin Font", loaded_names, 0)
 
-    if result is not -1:
+    if result != -1:
         latin_font = loaded_fonts[result]
     else:
         latin_font = None
@@ -66,11 +67,15 @@ def BuildRomanization(unused, font):
 
     MakeLowerAccent("dotbelowcomb", latin_font, "idieresis", font)
     MakeLowerAccent("uni0331", latin_font, "amacron", font) # "COMBINING MACRON BELOW"
+    MakeUpperAccent("acutecomb", latin_font, "Sacute", "sacute", font)
 
     code = 0x1E25 # h + lower dot
     MakeAccentedCharacter(font, code)
 
     code = 0x1E6D # t + lower dot
+    MakeAccentedCharacter(font, code)
+
+    code = 0x1E63 # s + lower dot
     MakeAccentedCharacter(font, code)
 
     # TODO: build more romanization support glyphs
@@ -101,6 +106,40 @@ def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
         # Move accent to the lower position (negative delta)
         delta_y = src_body.boundingBox()[1] - src_accent.boundingBox()[3] - descending_dist
         target_glyph.transform(psMat.translate(0, delta_y))
+
+        # center the resulting glyph
+        bb = target_glyph.boundingBox()
+        target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+        target_glyph.width = 0
+
+        target_glyph.glyphname = accent_name
+
+def MakeUpperAccent(accent_name, source_font,
+                    src_cap_ref_name, src_small_ref_name, target_font):
+    code = fontforge.unicodeFromName(accent_name)
+
+    if accent_name in source_font and source_font[accent_name].isWorthOutputting():
+        CopyGlyph(code, source_font, target_font)
+    else:
+        # Extract elements from the small reference glyph
+        src_contours = Contours(source_font[src_small_ref_name])
+        src_accent = src_contours[0]
+        src_body = src_contours[-1]
+
+        # Reset target glyph
+        target_glyph = target_font.createChar(code)
+        target_glyph.clear()
+
+        # Copy accent from source glyph
+        pen = target_glyph.glyphPen()
+        src_accent.draw(pen)
+        pen = None
+
+        # Distance between the location of the upper accent in capital vs small reference
+        src_cap_contours = Contours(source_font[src_cap_ref_name])
+        src_cap_accent = src_cap_contours[0]
+        ascending_dist = src_cap_accent.boundingBox()[1] - src_accent.boundingBox()[1]
+        utils.SetGlyphCommentProperty(target_glyph, "AscenderShift", ascending_dist)
 
         # center the resulting glyph
         bb = target_glyph.boundingBox()
