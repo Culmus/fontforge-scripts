@@ -10,6 +10,11 @@ sys.path.append(script_dir)
 import utils
 import utils_ui
 
+def ContourInContour(small_contour, big_contour):
+    bb = small_contour.boundingBox()
+    BB = big_contour.boundingBox()
+    return bb[0] > BB[0] and bb[1] > BB[1] and bb[2] < BB[2] and bb[3] < BB[3]
+
 # Copy glyph between fonts
 def CopyGlyph(code, source_font, target_font):
     glyph_name = fontforge.nameFromUnicode(code)
@@ -33,11 +38,9 @@ def Contours(glyph):
     # Remove contours fully enclosed inside other contours, they are not
     # representative of either accent or body position
     for i in reversed(range(len(contours))):
-        bb = contours[i].boundingBox()
         # Remove contour i if it's fully inside some bigger contour
         for j in range(i + 1, len(contours)):
-            BB = contours[j].boundingBox()
-            if bb[0] > BB[0] and bb[1] > BB[1] and bb[2] < BB[2] and bb[3] < BB[3]:
+            if ContourInContour(contours[i], contours[j]):
                 contours.pop(i)
                 break
 
@@ -67,7 +70,14 @@ def BuildRomanization(unused, font):
 
     MakeLowerAccent("dotbelowcomb", latin_font, "idieresis", font)
     MakeLowerAccent("uni0331", latin_font, "amacron", font) # "COMBINING MACRON BELOW"
+
     MakeUpperAccent("acutecomb", latin_font, "Sacute", "sacute", font)
+    MakeUpperAccent("gravecomb", latin_font, "Ograve", "ograve", font)
+    MakeUpperAccent("uni0304", latin_font, "Amacron", "amacron", font) # "COMBINING MACRON"
+    MakeUpperAccent("uni0306", latin_font, "Abreve", "abreve", font) # "COMBINING BREVE"
+    MakeUpperAccent("uni0307", latin_font, "Edotaccent", "edotaccent", font) # "COMBINING DOT ABOVE"
+    MakeUpperAccent("uni030C", latin_font, "Zcaron", "zcaron", font) # "COMBINING CARON"
+    MakeUpperAccent("uni030A", latin_font, "Aring", "aring", font, option="ring") # "COMBINING RING ABOVE"
 
     code = 0x1E25 # h + lower dot
     MakeAccentedCharacter(font, code)
@@ -115,7 +125,8 @@ def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
         target_glyph.glyphname = accent_name
 
 def MakeUpperAccent(accent_name, source_font,
-                    src_cap_ref_name, src_small_ref_name, target_font):
+                    src_cap_ref_name, src_small_ref_name,
+                    target_font, option=None):
     code = fontforge.unicodeFromName(accent_name)
 
     if accent_name in source_font and source_font[accent_name].isWorthOutputting():
@@ -133,6 +144,16 @@ def MakeUpperAccent(accent_name, source_font,
         # Copy accent from source glyph
         pen = target_glyph.glyphPen()
         src_accent.draw(pen)
+
+        # Complete ring inner contour
+        if (option == "ring"):
+            # Find the contour inside src_accent
+            src_accent2 = next((c
+                                for c
+                                in source_font[src_small_ref_name].foreground
+                                if ContourInContour(c, src_accent)), None)
+            src_accent2.draw(pen)
+
         pen = None
 
         # Distance between the location of the upper accent in capital vs small reference
