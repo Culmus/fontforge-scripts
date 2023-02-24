@@ -46,6 +46,25 @@ def Contours(glyph):
 
     return contours
 
+def ShrinkToCedilla(glyph):
+    target_accent = glyph.foreground[0]
+
+    # Cedilla root points are the ones nearest to the zero baseline
+    pts = (pt for pt in target_accent if pt.on_curve)
+    pts = sorted(pts, key=lambda pt: abs(pt.y))
+    pt_root1, pt_root2 = pts[0], pts[1]
+
+    # Delete everything above the root points
+    for i in reversed(range(len(target_accent))):
+        if target_accent[i].y > pt_root2.y and target_accent[i].on_curve:
+            del target_accent[i]
+    
+    # The resulting contour is still detached from the glyph, we
+    # must draw it back.
+    pen = glyph.glyphPen()
+    target_accent.draw(pen)
+    pen = None
+
 # Ask user to select a source font for latin glyphs among the currently
 # opened fonts.
 
@@ -115,6 +134,11 @@ def MakeLowerAccent(accent_name, source_font,
         src_accent.draw(pen)
         pen = None
 
+        # The cedilla is connected to the glyph, so they were copied together.
+        # We need to delete the glyph and leave just the cedilla itself
+        if option == "cedilla":
+            ShrinkToCedilla(target_glyph)
+
         # Move accent to the lower position (negative delta)
         delta_y = src_body.boundingBox()[1] - src_accent.boundingBox()[3] - descending_dist
         target_glyph.transform(psMat.translate(0, delta_y))
@@ -125,26 +149,6 @@ def MakeLowerAccent(accent_name, source_font,
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
-
-        # The cedilla is connected to the glyph, so they were copied together.
-        # We need to delete the glyph and leave just the cedilla itself
-        if option == "cedilla":
-            target_accent = target_glyph.foreground[0]
-            # Cedilla root points are the ones nearest to the zero baseline
-            pts = (pt for pt in target_accent if pt.on_curve)
-            pts = sorted(pts, key=lambda pt: abs(pt.y))
-            pt_root1, pt_root2 = pts[0], pts[1]
-
-            # Delete everything above the root points
-            for i in reversed(range(len(target_accent))):
-                if target_accent[i].y > pt_root2.y and target_accent[i].on_curve:
-                    del target_accent[i]
-            
-            # The resulting contour is still detached from the glyph, we
-            # must draw it back.
-            pen = target_glyph.glyphPen()
-            target_accent.draw(pen)
-            pen = None
 
 def MakeUpperAccent(accent_name, source_font,
                     src_cap_ref_name, src_small_ref_name,
