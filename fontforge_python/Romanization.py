@@ -70,6 +70,7 @@ def BuildRomanization(unused, font):
 
     MakeLowerAccent("dotbelowcomb", latin_font, "idieresis", font)
     MakeLowerAccent("uni0331", latin_font, "amacron", font) # "COMBINING MACRON BELOW"
+    MakeLowerAccent("uni0327", latin_font, "ccedilla", font, option="cedilla") # "COMBINING CEDILLA"
 
     MakeUpperAccent("acutecomb", latin_font, "Sacute", "sacute", font)
     MakeUpperAccent("gravecomb", latin_font, "Ograve", "ograve", font)
@@ -90,7 +91,8 @@ def BuildRomanization(unused, font):
 
     # TODO: build more romanization support glyphs
 
-def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
+def MakeLowerAccent(accent_name, source_font,
+                    source_ref_name, target_font, option=None):
     code = fontforge.unicodeFromName(accent_name)
 
     if accent_name in source_font and source_font[accent_name].isWorthOutputting():
@@ -123,6 +125,26 @@ def MakeLowerAccent(accent_name, source_font, source_ref_name, target_font):
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
+
+        # The cedilla is connected to the glyph, so they were copied together.
+        # We need to delete the glyph and leave just the cedilla itself
+        if option == "cedilla":
+            target_accent = target_glyph.foreground[0]
+            # Cedilla root points are the ones nearest to the zero baseline
+            pts = (pt for pt in target_accent if pt.on_curve)
+            pts = sorted(pts, key=lambda pt: abs(pt.y))
+            pt_root1, pt_root2 = pts[0], pts[1]
+
+            # Delete everything above the root points
+            for i in reversed(range(len(target_accent))):
+                if target_accent[i].y > pt_root2.y and target_accent[i].on_curve:
+                    del target_accent[i]
+            
+            # The resulting contour is still detached from the glyph, we
+            # must draw it back.
+            pen = target_glyph.glyphPen()
+            target_accent.draw(pen)
+            pen = None
 
 def MakeUpperAccent(accent_name, source_font,
                     src_cap_ref_name, src_small_ref_name,
