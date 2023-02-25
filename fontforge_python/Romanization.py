@@ -46,6 +46,9 @@ def Contours(glyph):
 
     return contours
 
+def HasAscender(char):
+    return char in "bdfhklt"
+
 def ShrinkToCedilla(glyph):
     target_accent = glyph.foreground[0]
 
@@ -234,6 +237,10 @@ def MakeUpperAccent(accent_name, source_font,
 def MakeAccentedCharacter(font, code):
     unistr = chr(code)
 
+    # Call recursively for upper-case character
+    if unistr.islower():
+        MakeAccentedCharacter(font, ord(unistr.upper()))
+
     # Get Unicode components by canonical decomposition
     norm = unicodedata.normalize("NFD", unistr)
     base_code = ord(norm[0])
@@ -245,6 +252,13 @@ def MakeAccentedCharacter(font, code):
     base_bb = font[base_name].boundingBox()
     x_accent = (base_bb[2] + base_bb[0]) / 2
 
+    # Vertical accent position
+    y_accent = 0
+    if unistr.isupper() or HasAscender(norm[0]):
+        ascending_dist = utils.GetGlyphCommentProperty(font[accent_name], "AscenderShift")
+        if ascending_dist is not None:
+            y_accent = ascending_dist;
+
     # Initialize target character
     target_char = font.createChar(code)
     target_char.clear()
@@ -252,7 +266,7 @@ def MakeAccentedCharacter(font, code):
 
     # Add references to the base character and to the accent
     pen.addComponent(base_name, psMat.identity())
-    pen.addComponent(accent_name, psMat.translate(x_accent, 0))
+    pen.addComponent(accent_name, psMat.translate(x_accent, y_accent))
     pen = None
 
     target_char.width = font[base_name].width
