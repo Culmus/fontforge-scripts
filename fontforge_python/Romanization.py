@@ -81,6 +81,45 @@ def SelectLatinFont():
 
     return latin_font
 
+def RomanizationCodes():
+    # Romanization characters which can be represented by a single Unicode glyph
+    chars = [0x1E25, # h + lower dot
+             0x1E6D, # t + lower dot
+             0x1E63, # s + lower dot
+             0x015B, # s acute
+             0x0161, # s caron
+             0x00E5, # a ring
+             0x0229, # e cedille
+             0x0175, # w circumflex
+             0x0103, # a breve
+             0x014F, # o breve
+             0x1E1D, # e cedilla breve
+             0x00E2, # a circumflex
+             0x014D, # o macron
+             0x00E9, # e acute
+             0x016B, # u macron
+             0x1E33  # k + lower dot
+    ]
+
+    # Romanization characters which don't have a single Unicode glyph
+    seqs = [[0x0073, 0x0300], # s grave
+            [0x0073, 0x0300, 0x0307], # s grave + upper dot
+            [0x0062, 0x0331] # b lower macron
+    ]
+
+    # Add consonants with dagesh (upper dot)
+    consonants = "bgdhwzṭyklmnspṣqrśšt" # contains Unicode characters
+    for c in consonants:
+        # Combine consonant with upper dot and add to the list
+        norm = unicodedata.normalize("NFD", c)
+        code = unicodedata.normalize("NFC", norm + "\u0307")
+        if len(code) == 1:
+            chars.append(ord(code))
+        else:
+            seqs.append([ord(ch) for ch in code])
+
+    return chars, seqs
+
 def BuildRomanization(unused, font):
     latin_font = SelectLatinFont()
 
@@ -93,20 +132,17 @@ def BuildRomanization(unused, font):
 
     MakeUpperAccent("acutecomb", latin_font, "Sacute", "sacute", font)
     MakeUpperAccent("gravecomb", latin_font, "Ograve", "ograve", font)
+    MakeUpperAccent("uni0302", latin_font, "Acircumflex", "acircumflex", font) # "COMBINING CIRCUMFLEX ACCENT"
     MakeUpperAccent("uni0304", latin_font, "Amacron", "amacron", font) # "COMBINING MACRON"
     MakeUpperAccent("uni0306", latin_font, "Abreve", "abreve", font) # "COMBINING BREVE"
     MakeUpperAccent("uni0307", latin_font, "Edotaccent", "edotaccent", font) # "COMBINING DOT ABOVE"
     MakeUpperAccent("uni030C", latin_font, "Zcaron", "zcaron", font) # "COMBINING CARON"
     MakeUpperAccent("uni030A", latin_font, "Aring", "aring", font, option="ring") # "COMBINING RING ABOVE"
 
-    code = 0x1E25 # h + lower dot
-    MakeAccentedCharacter(font, code)
+    chars, seqs = RomanizationCodes()
 
-    code = 0x1E6D # t + lower dot
-    MakeAccentedCharacter(font, code)
-
-    code = 0x1E63 # s + lower dot
-    MakeAccentedCharacter(font, code)
+    for code in chars:
+        MakeAccentedCharacter(font, code)
 
     # TODO: build more romanization support glyphs
 
