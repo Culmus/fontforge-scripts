@@ -244,20 +244,24 @@ def MakeAccentedCharacter(font, code):
     # Get Unicode components by canonical decomposition
     norm = unicodedata.normalize("NFD", unistr)
     base_code = ord(norm[0])
-    accent_code = ord(norm[1])
+    accent_codes = [ord(norm_c) for norm_c in norm[1:]]
     base_name = fontforge.nameFromUnicode(base_code)
-    accent_name = fontforge.nameFromUnicode(accent_code)
+    accent_names = [fontforge.nameFromUnicode(code)for code in accent_codes]
 
     # Horizontal accent position
     base_bb = font[base_name].boundingBox()
     x_accent = (base_bb[2] + base_bb[0]) / 2
 
     # Vertical accent position
-    y_accent = 0
-    if unistr.isupper() or HasAscender(norm[0]):
-        ascending_dist = utils.GetGlyphCommentProperty(font[accent_name], "AscenderShift")
-        if ascending_dist is not None:
-            y_accent = ascending_dist;
+    y_accents = []
+    for accent_name in accent_names:
+        y_accent = 0
+        if unistr.isupper() or HasAscender(norm[0]):
+            ascending_dist = utils.GetGlyphCommentProperty(font[accent_name], "AscenderShift")
+            if ascending_dist is not None:
+                y_accent = ascending_dist
+
+        y_accents.append(y_accent)
 
     # Initialize target character
     target_char = font.createChar(code)
@@ -266,7 +270,8 @@ def MakeAccentedCharacter(font, code):
 
     # Add references to the base character and to the accent
     pen.addComponent(base_name, psMat.identity())
-    pen.addComponent(accent_name, psMat.translate(x_accent, y_accent))
+    for accent_name, y_accent in zip(accent_names, y_accents):
+        pen.addComponent(accent_name, psMat.translate(x_accent, y_accent))
     pen = None
 
     target_char.width = font[base_name].width
