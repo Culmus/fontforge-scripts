@@ -9,6 +9,7 @@ sys.path.append(script_dir)
 
 import utils
 import utils_ui
+import utils_cv
 
 def ContourInContour(small_contour, big_contour):
     bb = small_contour.boundingBox()
@@ -247,7 +248,15 @@ def ComputeAccentShifts(font, norm):
 
     # Horizontal accent position
     base_bb = font[base_name].boundingBox()
-    x_accent = (base_bb[2] + base_bb[0]) / 2
+    x_lower_accent = (base_bb[2] + base_bb[0]) / 2
+    x_upper_accent = x_lower_accent
+
+    # For small characters with ascenders, place the accent over the ascender
+    if HasAscender(norm[0]):
+        x_height = font["x"].boundingBox()[3]
+        base_contour = Contours(font[base_name])[0]
+        true_points = [(p.x, p.y) for p in base_contour if p.on_curve]
+        x_upper_accent = utils_cv.AscenderMeanX(true_points, x_height)
 
     # Vertical accent position
     xy_accents = []
@@ -257,6 +266,10 @@ def ComputeAccentShifts(font, norm):
             ascending_dist = utils.GetGlyphCommentProperty(font[accent_name], "AscenderShift")
             if ascending_dist is not None:
                 y_accent = ascending_dist
+
+        # Check accent position relative to the baseline
+        is_lower_accent = (font[accent_name].boundingBox()[1] < 0)
+        x_accent = x_lower_accent if is_lower_accent else x_upper_accent
 
         xy_accents.append((x_accent, y_accent))
 
