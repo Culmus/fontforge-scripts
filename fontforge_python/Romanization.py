@@ -245,6 +245,7 @@ def CharNames(norm):
 
 def ComputeAccentShifts(font, norm):
     base_name, accent_names = CharNames(norm)
+    x_height = font["x"].boundingBox()[3]
 
     # Horizontal accent position
     base_bb = font[base_name].boundingBox()
@@ -253,7 +254,6 @@ def ComputeAccentShifts(font, norm):
 
     # For small characters with ascenders, place the accent over the ascender
     if HasAscender(norm[0]):
-        x_height = font["x"].boundingBox()[3]
         base_contour = Contours(font[base_name])[0]
         true_points = [(p.x, p.y) for p in base_contour if p.on_curve]
         x_upper_accent = utils_cv.AscenderMeanX(true_points, x_height)
@@ -271,7 +271,16 @@ def ComputeAccentShifts(font, norm):
         is_lower_accent = (font[accent_name].boundingBox()[1] < 0)
         x_accent = x_lower_accent if is_lower_accent else x_upper_accent
 
-        xy_accents.append((x_accent, y_accent))
+        xy_accents.append([x_accent, y_accent, is_lower_accent])
+
+    # Stack upper accents if necessary
+    if (len(accent_names) == 2 and not xy_accents[0][2] and not xy_accents[1][2]):
+        contour1 = [(p.x, p.y) for p in Contours(font[accent_names[0]])[0]]
+        contour2 = [(p.x, p.y) for p in Contours(font[accent_names[1]])[0]]
+        shift = utils_cv.StackAccents(contour1, contour2, x_height / 10)
+
+        # shift the second accent up as appropriate
+        xy_accents[1][1] += shift
 
     return xy_accents
 
@@ -296,7 +305,7 @@ def MakeAccentedCharacter(font, code):
     # Add references to the base character and to the accent
     pen.addComponent(base_name, psMat.identity())
     for accent_name, xy_accent in zip(accent_names, xy_accents):
-        pen.addComponent(accent_name, psMat.translate(*xy_accent))
+        pen.addComponent(accent_name, psMat.translate(*xy_accent[:2]))
     pen = None
 
     target_char.width = font[base_name].width
