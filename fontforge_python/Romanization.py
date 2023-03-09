@@ -17,8 +17,11 @@ def ContourInContour(small_contour, big_contour):
     return bb[0] > BB[0] and bb[1] > BB[1] and bb[2] < BB[2] and bb[3] < BB[3]
 
 # Copy glyph between fonts
-def CopyGlyph(code, source_font, target_font):
+def CopyGlyph(code, source_font, target_font, copy_width=True):
     glyph_name = fontforge.nameFromUnicode(code)
+    if glyph_name not in source_font or not source_font[glyph_name].isWorthOutputting():
+        return False
+
     target_char = target_font.createChar(code)
     target_char.clear()
 
@@ -27,6 +30,10 @@ def CopyGlyph(code, source_font, target_font):
     pen = None
 
     target_char.glyphname = glyph_name
+    if copy_width:
+        target_char.width = source_font[glyph_name].width
+
+    return True
 
 def Contours(glyph):
     def contour_area(contour):
@@ -86,7 +93,7 @@ def SelectLatinFont():
     return latin_font
 
 def RomanizationCodes():
-    # Romanization characters which can be represented by a single Unicode glyph
+    # Accented characters which can be represented by a single Unicode glyph
     chars = [0x1E25, # h + lower dot
              0x1E6D, # t + lower dot
              0x1E63, # s + lower dot
@@ -111,6 +118,16 @@ def RomanizationCodes():
             [0x0062, 0x0331] # b lower macron
     ]
 
+    # Special non-latin characters
+    special = [0x02BE, # right half ring
+               0x02BF, # left half ring
+               0x00B0, # degree sign
+               0x0259, # small letter schwa
+               0x018F, # capital letter schwa - optional
+               0x014B, # small letter eng
+               0x014A  # capital letter eng
+    ]
+
     # Add consonants with dagesh (upper dot)
     consonants = "bgdhwzṭyklmnspṣqrśšt" # contains Unicode characters
     for c in consonants:
@@ -122,7 +139,7 @@ def RomanizationCodes():
         else:
             seqs.append([ord(ch) for ch in code])
 
-    return chars, seqs
+    return chars, seqs, special
 
 def BuildRomanization(unused, font):
     latin_font = SelectLatinFont()
@@ -143,10 +160,13 @@ def BuildRomanization(unused, font):
     MakeUpperAccent("uni030C", latin_font, "Zcaron", "zcaron", font) # "COMBINING CARON"
     MakeUpperAccent("uni030A", latin_font, "Aring", "aring", font, option="ring") # "COMBINING RING ABOVE"
 
-    chars, seqs = RomanizationCodes()
+    chars, seqs, special = RomanizationCodes()
 
     for code in chars:
         MakeAccentedCharacter(font, code)
+
+    for code in special:
+        CopyGlyph(code, latin_font, font)
 
     # TODO: build more romanization support glyphs
 
@@ -154,9 +174,7 @@ def MakeLowerAccent(accent_name, source_font,
                     source_ref_name, target_font, option=None):
     code = fontforge.unicodeFromName(accent_name)
 
-    if accent_name in source_font and source_font[accent_name].isWorthOutputting():
-        CopyGlyph(code, source_font, target_font)
-    else:
+    if not CopyGlyph(code, source_font, target_font, copy_width=False):
         # Extract elements from the reference glyph
         src_contours = Contours(source_font[source_ref_name])
         src_accent = src_contours[0]
@@ -195,9 +213,7 @@ def MakeUpperAccent(accent_name, source_font,
                     target_font, option=None):
     code = fontforge.unicodeFromName(accent_name)
 
-    if accent_name in source_font and source_font[accent_name].isWorthOutputting():
-        CopyGlyph(code, source_font, target_font)
-    else:
+    if not CopyGlyph(code, source_font, target_font, copy_width=False):
         # Extract elements from the small reference glyph
         src_contours = Contours(source_font[src_small_ref_name])
         src_accent = src_contours[0]
