@@ -168,7 +168,10 @@ def BuildRomanization(unused, font):
     for code in special:
         CopyGlyph(code, latin_font, font)
 
-    # TODO: build more romanization support glyphs
+    if "uni0259" not in font:
+        BuildSmallSchwa(font)
+
+    # TODO: build half-rings
 
 def MakeLowerAccent(accent_name, source_font,
                     source_ref_name, target_font, option=None):
@@ -326,3 +329,21 @@ def MakeAccentedCharacter(font, code):
 
     target_char.width = font[base_name].width
     target_char.glyphname = fontforge.nameFromUnicode(code)
+
+def BuildSmallSchwa(font):
+    schwa_code = 0x0259
+    schwa_char = font.createChar(schwa_code)
+    schwa_char.clear()
+
+    pen = schwa_char.glyphPen()
+    font["e"].draw(pen)
+    pen = None
+
+    bb_e = font["e"].boundingBox()
+    schwa_char.transform(psMat.rotate(3.1415))
+    schwa_char.transform(psMat.translate(bb_e[0] + bb_e[2], bb_e[1] + bb_e[3]))
+
+    schwa_char.glyphname = fontforge.nameFromUnicode(schwa_code)
+    schwa_char.width = font["e"].width
+
+    return True
