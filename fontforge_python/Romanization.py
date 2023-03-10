@@ -171,7 +171,7 @@ def BuildRomanization(unused, font):
     if "uni0259" not in font:
         BuildSmallSchwa(font)
 
-    # TODO: build half-rings
+    BuildHalfRings(font)
 
 def MakeLowerAccent(accent_name, source_font,
                     source_ref_name, target_font, option=None):
@@ -347,3 +347,54 @@ def BuildSmallSchwa(font):
     schwa_char.width = font["e"].width
 
     return True
+
+def CopyAndCutout(source_char, target_char, cutting_bb):
+    target_char.clear()
+
+    # Copy ring into half ring
+    pen = target_char.glyphPen()
+    source_char.draw(pen)
+
+    # Draw rectangle over the cutting bounding box
+    pen.moveTo((cutting_bb[0], cutting_bb[1]))
+    pen.lineTo((cutting_bb[0], cutting_bb[3]))
+    pen.lineTo((cutting_bb[2], cutting_bb[3]))
+    pen.lineTo((cutting_bb[2], cutting_bb[1]))
+    pen.closePath()                       # end the contour
+    pen = None
+
+    # Build half-ring contour by intersection
+    target_char.intersect()
+    target_char.left_side_bearing = source_char.left_side_bearing
+    target_char.right_side_bearing = source_char.right_side_bearing
+
+def BuildHalfRings(font):
+    # We expect some ring to be there
+    ring_char = None
+    if "degree" in font:
+        ring_char = font["degree"]
+    elif "ring" in font:
+        ring_char = font["ring"]
+    elif "uni030A" in font:
+        ring_char = font["uni030A"] # combining ring above
+
+    if ring_char is None:
+        return
+
+    ring_bb = ring_char.boundingBox()
+
+    # Copy ring and keep the left half
+    left_half_ring_char = font.createChar(0x02BF)
+
+    left_half_bb = (ring_bb[0] - 1, ring_bb[1] - 1,
+                    (ring_bb[0] + ring_bb[2]) / 2, ring_bb[3] + 1)
+
+    CopyAndCutout(ring_char, left_half_ring_char, left_half_bb)
+
+    # Copy ring and keep the right half
+    right_half_ring_char = font.createChar(0x02BE)
+    
+    right_half_bb = ((ring_bb[0] + ring_bb[2]) / 2, ring_bb[1] - 1,
+                     ring_bb[2] + 1, ring_bb[3] + 1)
+
+    CopyAndCutout(ring_char, right_half_ring_char, right_half_bb)
