@@ -147,6 +147,13 @@ def BuildRomanization(unused, font):
     if (latin_font is None):
         return
 
+    for lookup in ("UpperAccent", "LowerAccent"):
+        if lookup in font.gpos_lookups:
+            font.removeLookup(lookup)
+        font.addLookup(lookup, "gpos_mark2base", None, (("mark",(("latn",("dflt")),)),))
+        font.addLookupSubtable(lookup, lookup)
+        font.addAnchorClass(lookup, lookup)
+
     MakeLowerAccent("dotbelowcomb", latin_font, "idieresis", font)
     MakeLowerAccent("uni0331", latin_font, "amacron", font) # "COMBINING MACRON BELOW"
     MakeLowerAccent("uni0327", latin_font, "ccedilla", font, option="cedilla") # "COMBINING CEDILLA"
@@ -172,6 +179,7 @@ def BuildRomanization(unused, font):
         BuildSmallSchwa(font)
 
     BuildHalfRings(font)
+    AddBaseAnchors(font)
 
 def MakeLowerAccent(accent_name, source_font,
                     source_ref_name, target_font, option=None):
@@ -210,6 +218,9 @@ def MakeLowerAccent(accent_name, source_font,
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
+
+    # Add anchor point to the accent
+    target_glyph.addAnchorPoint("LowerAccent", "mark", 0, 0)
 
 def MakeUpperAccent(accent_name, source_font,
                     src_cap_ref_name, src_small_ref_name,
@@ -253,6 +264,9 @@ def MakeUpperAccent(accent_name, source_font,
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
+
+    # Add anchor point to the accent
+    target_glyph.addAnchorPoint("UpperAccent", "mark", 0, 0)
 
 def CharNames(norm):
     base_code = ord(norm[0])
@@ -398,3 +412,24 @@ def BuildHalfRings(font):
                      ring_bb[2] + 1, ring_bb[3] + 1)
 
     CopyAndCutout(ring_char, right_half_ring_char, right_half_bb)
+
+def AddBaseAnchors(font):
+    upper_accent = "acutecomb"
+    lower_accent = "dotbelowcomb"
+
+    # All the standard latin letters need anchors
+    base_codes = list(range(ord('a'), ord('z') + 1)) + list(range(ord('A'), ord('Z') + 1))
+
+    for accent_name in (upper_accent, lower_accent):
+        for base_code in base_codes:
+            accent_code = fontforge.unicodeFromName(accent_name)
+            base_name = fontforge.nameFromUnicode(base_code)
+
+            norm = chr(base_code) + chr(accent_code)
+            xy_accents = ComputeAccentShifts(font, norm)
+
+            is_lower_accent = (font[accent_name].boundingBox()[1] < 0)
+            lookup = "LowerAccent" if is_lower_accent else "UpperAccent"
+
+            # Add anchor point to the base char according to the accent type
+            font[base_name].addAnchorPoint(lookup, "base", *xy_accents[0])
