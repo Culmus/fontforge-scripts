@@ -35,13 +35,21 @@ def CopyGlyph(code, source_font, target_font, copy_width=True):
 
     return True
 
+# Collect glyph contours including references. Output contours are sorted by
+# enclosed area with smaller area first.
 def Contours(glyph):
     def contour_area(contour):
         bb = contour.boundingBox()
         return (bb[2] - bb[0]) * (bb[3] - bb[1])
 
+    # Collect reference contours
+    ref_contours = (tuple(glyph.font[ref_name].foreground) for ref_name, _, _ in glyph.references)
+    ref_contours = tuple(ref_contours)
+
+    contours = sum(ref_contours, ()) + tuple(glyph.foreground)
+
     # Sort contous by size of bounding box
-    contours = sorted(glyph.foreground, key=lambda c: contour_area(c))
+    contours = sorted(contours, key=lambda c: contour_area(c))
 
     # Remove contours fully enclosed inside other contours, they are not
     # representative of either accent or body position
@@ -55,7 +63,7 @@ def Contours(glyph):
     return contours
 
 def HasAscender(char):
-    return char in "bdfhklt"
+    return char in "bdfhkltṭ"
 
 def ShrinkToCedilla(glyph):
     target_accent = glyph.foreground[0]
@@ -287,7 +295,7 @@ def ComputeAccentShifts(font, norm):
 
     # For small characters with ascenders, place the accent over the ascender
     if HasAscender(norm[0]):
-        base_contour = Contours(font[base_name])[0]
+        base_contour = Contours(font[base_name])[-1]
         true_points = [(p.x, p.y) for p in base_contour if p.on_curve]
         x_upper_accent = utils_cv.AscenderMeanX(true_points, x_height)
 
@@ -419,6 +427,9 @@ def AddBaseAnchors(font):
 
     # All the standard latin letters need anchors
     base_codes = list(range(ord('a'), ord('z') + 1)) + list(range(ord('A'), ord('Z') + 1))
+
+    # T with dow below and T with dot above need anchors too (for placing the other dot)
+    base_codes.extend([0x1E6A, 0x1E6B, 0x1E6C, 0x1E6D])
 
     for accent_name in (upper_accent, lower_accent):
         for base_code in base_codes:
