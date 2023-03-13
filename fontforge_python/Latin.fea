@@ -1,0 +1,25 @@
+lookup Saccents {
+    sub S acutecomb uni0307 by uni1E64;
+    sub S uni0307 acutecomb by uni1E64;
+    sub Sacute uni0307 by uni1E64;
+    sub uni1E60 acutecomb by uni1E64;
+    sub s acutecomb uni0307 by uni1E65;
+    sub s uni0307 acutecomb by uni1E65;
+    sub sacute uni0307 by uni1E65;
+    sub uni1E61 acutecomb by uni1E65;
+    sub S uni030C uni0307 by uni1E66;
+    sub S uni0307 uni030C by uni1E66;
+    sub Scaron uni0307 by uni1E66;
+    sub uni1E60 uni030C by uni1E66;
+    sub s uni030C uni0307 by uni1E67;
+    sub s uni0307 uni030C by uni1E67;
+    sub scaron uni0307 by uni1E67;
+    sub uni1E61 uni030C by uni1E67;
+} Saccents;
+
+feature ccmp {
+  script latn;
+    language dflt ;
+      lookup Saccents;
+} ccmp;
+

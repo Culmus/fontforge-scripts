@@ -189,6 +189,8 @@ def BuildRomanization(unused, font):
     BuildHalfRings(font)
     AddBaseAnchors(font)
 
+    font.mergeFeature(script_dir + "/Latin.fea")
+
 def MakeLowerAccent(accent_name, source_font,
                     source_ref_name, target_font, option=None):
     code = fontforge.unicodeFromName(accent_name)
