@@ -73,9 +73,10 @@ def ShrinkToCedilla(glyph):
     pts = sorted(pts, key=lambda pt: abs(pt.y))
     pt_root1, pt_root2 = pts[0], pts[1]
 
-    # Delete everything above the root points
+    # Delete everything above both root points
+    level = max(pt_root1.y, pt_root2.y)
     for i in reversed(range(len(target_accent))):
-        if target_accent[i].y > pt_root2.y and target_accent[i].on_curve:
+        if target_accent[i].y > level and target_accent[i].on_curve:
             del target_accent[i]
     
     # The resulting contour is still detached from the glyph, we
