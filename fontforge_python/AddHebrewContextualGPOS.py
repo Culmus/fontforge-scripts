@@ -1,4 +1,5 @@
 import fontforge
+import math
 import os.path
 import sys
 
@@ -153,6 +154,10 @@ def AddYerushalamGPOS(font):
     # Align final mem and hiriq by right boundary
     # NOTE: final mem has positive bearing, but hiriq has negative bearing
     hiriq_anchor = -fmem.right_side_bearing + hiriq.right_side_bearing
+
+    # Address slanted font
+    height = fmem.boundingBox()[3] - hiriq.boundingBox()[3]
+    hiriq_anchor += height * math.sin(math.radians(font.italicangle))
 
     font["afii57676"].addAnchorPoint("CtxAnchors_Yerushalam", "base", hiriq_anchor, 0)
     font["uniFB3C"].addAnchorPoint("CtxAnchors_Yerushalam", "base", hiriq_anchor, 0)
