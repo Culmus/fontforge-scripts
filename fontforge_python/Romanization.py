@@ -25,9 +25,33 @@ def CopyGlyph(code, source_font, target_font, copy_width=True):
     target_char = target_font.createChar(code)
     target_char.clear()
 
+    source_glyph = source_font[glyph_name]
+
+    # If source glyph contains references, create a temporary copy with
+    # dereferenced contours. Another possible approach is copying reference
+    # glyphs to target first, but we prefer not to clutter the target font.
+    deref = False
+    if source_glyph.references:
+        changed = source_font.changed
+
+        # Make temporary copy in the source font.
+        deref_glyph = source_font.createChar(-1, "temporary")
+        pen = deref_glyph.glyphPen()
+        source_glyph.draw(pen)
+        pen = None
+
+        # Unlink refs in temporary copy to make contours available
+        deref_glyph.unlinkRef()
+        source_glyph = deref_glyph
+        deref = True
+
     pen = target_char.glyphPen()
-    source_font[glyph_name].draw(pen)
+    source_glyph.draw(pen)
     pen = None
+
+    if deref:
+        source_font.removeGlyph(deref_glyph)
+        source_font.changed = changed
 
     target_char.glyphname = glyph_name
     if copy_width:
@@ -179,7 +203,7 @@ def BuildRomanization(unused, font):
     chars, seqs, special = RomanizationCodes()
 
     for code in chars:
-        MakeAccentedCharacter(font, code)
+        MakeAccentedCharacter(latin_font, font, code)
 
     for code in special:
         CopyGlyph(code, latin_font, font)
@@ -328,12 +352,15 @@ def ComputeAccentShifts(font, norm):
 
     return xy_accents
 
-def MakeAccentedCharacter(font, code):
+def MakeAccentedCharacter(latin_font, font, code):
     unistr = chr(code)
 
     # Call recursively for upper-case character
     if unistr.islower():
-        MakeAccentedCharacter(font, ord(unistr.upper()))
+        MakeAccentedCharacter(latin_font, font, ord(unistr.upper()))
+
+    if CopyGlyph(code, latin_font, font):
+        return
 
     # Get Unicode components by canonical decomposition
     norm = unicodedata.normalize("NFD", unistr)
