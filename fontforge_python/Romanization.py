@@ -3,6 +3,7 @@ import os.path
 import psMat
 import sys
 import unicodedata
+from math import tan, pi
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
@@ -85,6 +86,13 @@ def Contours(glyph):
                 break
 
     return contours
+
+def UnslantedBoundingBox(glyph):
+    # Assume that the glyph bounding box is determined by the largest contour
+    largest_contour = Contours(glyph)[-1]
+    uns_contour = utils.Unslant(largest_contour, glyph.font.italicangle)
+
+    return uns_contour.boundingBox()
 
 def HasAscender(char):
     return char in "bdfhkltṭ"
@@ -248,8 +256,9 @@ def MakeLowerAccent(accent_name, source_font,
         target_glyph.transform(psMat.translate(0, delta_y))
 
         # center the resulting glyph
-        bb = target_glyph.boundingBox()
-        target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+        uns_bb = UnslantedBoundingBox(target_glyph)
+        x_shift = - (uns_bb[0] + uns_bb[2]) / 2
+        target_glyph.transform(psMat.translate(x_shift, 0))
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
@@ -294,8 +303,9 @@ def MakeUpperAccent(accent_name, source_font,
         utils.SetGlyphCommentProperty(target_glyph, "AscenderShift", ascending_dist)
 
         # center the resulting glyph
-        bb = target_glyph.boundingBox()
-        target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+        uns_bb = UnslantedBoundingBox(target_glyph)
+        x_shift = - (uns_bb[0] + uns_bb[2]) / 2
+        target_glyph.transform(psMat.translate(x_shift, 0))
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
@@ -316,14 +326,15 @@ def ComputeAccentShifts(font, norm):
     x_height = font["x"].boundingBox()[3]
 
     # Horizontal accent position
-    base_bb = font[base_name].boundingBox()
-    x_lower_accent = (base_bb[2] + base_bb[0]) / 2
+    uns_base_bb = UnslantedBoundingBox(font[base_name])
+    x_lower_accent = (uns_base_bb[2] + uns_base_bb[0]) / 2
     x_upper_accent = x_lower_accent
 
     # For small characters with ascenders, place the accent over the ascender
     if HasAscender(norm[0]):
         base_contour = Contours(font[base_name])[-1]
-        true_points = [(p.x, p.y) for p in base_contour if p.on_curve]
+        uns_base_contour = utils.Unslant(base_contour, font.italicangle)
+        true_points = [(p.x, p.y) for p in uns_base_contour if p.on_curve]
         x_upper_accent = utils_cv.AscenderMeanX(true_points, x_height)
 
     # Vertical accent position
@@ -339,6 +350,8 @@ def ComputeAccentShifts(font, norm):
         is_lower_accent = (font[accent_name].boundingBox()[1] < 0)
         x_accent = x_lower_accent if is_lower_accent else x_upper_accent
 
+        x_accent -= y_accent * tan(font.italicangle * pi / 180)
+
         xy_accents.append([x_accent, y_accent, is_lower_accent])
 
     # Stack upper accents if necessary
@@ -349,6 +362,7 @@ def ComputeAccentShifts(font, norm):
 
         # shift the second accent up as appropriate
         xy_accents[1][1] += shift
+        xy_accents[1][0] -= shift * tan(font.italicangle * pi / 180)
 
     return xy_accents
 
