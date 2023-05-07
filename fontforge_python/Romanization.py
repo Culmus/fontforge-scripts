@@ -117,6 +117,9 @@ def ShrinkToCedilla(glyph):
     target_accent.draw(pen)
     pen = None
 
+    # Compute accent root for proper anchoring
+    return (pt_root1.x + pt_root2.x) / 2
+
 # Ask user to select a source font for latin glyphs among the currently
 # opened fonts.
 
@@ -249,15 +252,19 @@ def MakeLowerAccent(accent_name, source_font,
         # The cedilla is connected to the glyph, so they were copied together.
         # We need to delete the glyph and leave just the cedilla itself
         if option == "cedilla":
-            ShrinkToCedilla(target_glyph)
+            cedilla_root = ShrinkToCedilla(target_glyph)
 
         # Move accent to the lower position (negative delta)
         delta_y = src_body.boundingBox()[1] - src_accent.boundingBox()[3] - descending_dist
         target_glyph.transform(psMat.translate(0, delta_y))
 
-        # center the resulting glyph
-        uns_bb = UnslantedBoundingBox(target_glyph)
-        x_shift = - (uns_bb[0] + uns_bb[2]) / 2
+        if option == "cedilla":
+            x_shift = -cedilla_root
+        else:
+            # center the resulting glyph
+            uns_bb = UnslantedBoundingBox(target_glyph)
+            x_shift = - (uns_bb[0] + uns_bb[2]) / 2
+
         target_glyph.transform(psMat.translate(x_shift, 0))
         target_glyph.width = 0
 
