@@ -373,6 +373,28 @@ def ComputeAccentShifts(font, norm):
 
     return xy_accents
 
+def ShiftAccentsX(glyph, y_shift):
+    unistr = chr(glyph.unicode)
+    norm = unicodedata.normalize("NFD", unistr)
+    base_name, _ = CharNames(norm)
+
+    base_glyph = glyph.font[base_name]
+    base_bb = base_glyph.boundingBox()
+
+    # Copy foreground layer
+    l = glyph.layers[1]
+
+    # Transform accent contours only
+    trf = psMat.translate(0, y_shift)
+    for c in l:
+        if c.boundingBox()[1] < base_bb[1] - 1 or c.boundingBox()[3] > base_bb[3] + 1:
+            c.transform(trf)
+
+    pen = glyph.glyphPen()
+    l.draw(pen)
+    pen = None
+    glyph.width = base_glyph.width
+
 def MakeAccentedCharacter(latin_font, font, code):
     unistr = chr(code)
 
