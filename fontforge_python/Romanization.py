@@ -12,6 +12,29 @@ import utils
 import utils_ui
 import utils_cv
 
+class HeightFixes:
+    # accent --> [capital_height, small_height, ascender_height]
+    heights = {}
+
+    def Get(base_char, accent_name, height):
+        if accent_name not in HeightFixes.heights:
+            HeightFixes.heights[accent_name] = [None, None, None]
+        
+        acc_fix = HeightFixes.heights[accent_name]
+
+        # Determine the relevant height value
+        idx = 2 if HasAscender(base_char) else (
+            0 if base_char.isupper() else 1
+        )
+
+        if acc_fix[idx] is None:
+            # Record the accent height when encountered for the first time
+            acc_fix[idx] = height
+            return 0
+        else:
+            # Compute difference with the recorded height
+            return acc_fix[idx] - height
+
 def ContourInContour(small_contour, big_contour):
     bb = small_contour.boundingBox()
     BB = big_contour.boundingBox()
@@ -213,6 +236,12 @@ def BuildRomanization(unused, font):
 
     chars, seqs, special = RomanizationCodes()
 
+    # Sort chars so that the characters present in the source font come first
+    def in_source(code):
+        name = fontforge.nameFromUnicode(code)
+        return name in latin_font and latin_font[name].isWorthOutputting()
+    chars.sort(key=in_source, reverse=True)
+
     for code in chars:
         MakeAccentedCharacter(latin_font, font, code)
 
@@ -395,19 +424,31 @@ def ShiftAccentsX(glyph, y_shift):
     pen = None
     glyph.width = base_glyph.width
 
+# By design, we start with copying existing characters, and then proceed to
+# building new characters from references.
 def MakeAccentedCharacter(latin_font, font, code):
+    # Get Unicode components by canonical decomposition
     unistr = chr(code)
+    norm = unicodedata.normalize("NFD", unistr)
+    base_name, accent_names = CharNames(norm)
 
     # Call recursively for upper-case character
     if unistr.islower():
         MakeAccentedCharacter(latin_font, font, ord(unistr.upper()))
 
     if CopyGlyph(code, latin_font, font):
-        return
+        # Fix accent height. Note that CopyGlyph() always dereferences contours
 
-    # Get Unicode components by canonical decomposition
-    norm = unicodedata.normalize("NFD", unistr)
-    base_name, accent_names = CharNames(norm)
+        # Accent contour
+        char_name = fontforge.nameFromUnicode(code)
+        accent_contour = Contours(font[char_name])[0]
+
+        # Accent height adjustment
+        height_fix = HeightFixes.Get(norm[0],
+            accent_names[0], accent_contour.boundingBox()[1])
+        
+        ShiftAccentsX(font[char_name], height_fix)
+        return
 
     xy_accents = ComputeAccentShifts(font, norm)
 
