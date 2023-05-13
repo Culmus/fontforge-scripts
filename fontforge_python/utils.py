@@ -1,3 +1,5 @@
+from math import tan, pi
+
 import fontforge
 import InitHebrewGlyphData
 
@@ -59,3 +61,10 @@ def GetMarkToMarkGap(font, mark_from, mark_to):
         return None
     else:
         return GetClassProperty(font, list_to, class_from)[0]
+
+def Unslant(contour, slanting_angle):
+    unslanted = contour.dup()
+    for pt in unslanted:
+        pt.x += pt.y * tan(slanting_angle * pi / 180)
+
+    return unslanted

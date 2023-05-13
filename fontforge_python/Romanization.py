@@ -3,6 +3,7 @@ import os.path
 import psMat
 import sys
 import unicodedata
+from math import tan, pi
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(script_dir)
@@ -10,6 +11,29 @@ sys.path.append(script_dir)
 import utils
 import utils_ui
 import utils_cv
+
+class HeightFixes:
+    # accent --> [capital_height, small_height, ascender_height]
+    heights = {}
+
+    def Get(base_char, accent_name, height):
+        if accent_name not in HeightFixes.heights:
+            HeightFixes.heights[accent_name] = [None, None, None]
+        
+        acc_fix = HeightFixes.heights[accent_name]
+
+        # Determine the relevant height value
+        idx = 2 if HasAscender(base_char) else (
+            0 if base_char.isupper() else 1
+        )
+
+        if acc_fix[idx] is None:
+            # Record the accent height when encountered for the first time
+            acc_fix[idx] = height
+            return 0
+        else:
+            # Compute difference with the recorded height
+            return acc_fix[idx] - height
 
 def ContourInContour(small_contour, big_contour):
     bb = small_contour.boundingBox()
@@ -25,9 +49,33 @@ def CopyGlyph(code, source_font, target_font, copy_width=True):
     target_char = target_font.createChar(code)
     target_char.clear()
 
+    source_glyph = source_font[glyph_name]
+
+    # If source glyph contains references, create a temporary copy with
+    # dereferenced contours. Another possible approach is copying reference
+    # glyphs to target first, but we prefer not to clutter the target font.
+    deref = False
+    if source_glyph.references:
+        changed = source_font.changed
+
+        # Make temporary copy in the source font.
+        deref_glyph = source_font.createChar(-1, "temporary")
+        pen = deref_glyph.glyphPen()
+        source_glyph.draw(pen)
+        pen = None
+
+        # Unlink refs in temporary copy to make contours available
+        deref_glyph.unlinkRef()
+        source_glyph = deref_glyph
+        deref = True
+
     pen = target_char.glyphPen()
-    source_font[glyph_name].draw(pen)
+    source_glyph.draw(pen)
     pen = None
+
+    if deref:
+        source_font.removeGlyph(deref_glyph)
+        source_font.changed = changed
 
     target_char.glyphname = glyph_name
     if copy_width:
@@ -62,6 +110,13 @@ def Contours(glyph):
 
     return contours
 
+def UnslantedBoundingBox(glyph):
+    # Assume that the glyph bounding box is determined by the largest contour
+    largest_contour = Contours(glyph)[-1]
+    uns_contour = utils.Unslant(largest_contour, glyph.font.italicangle)
+
+    return uns_contour.boundingBox()
+
 def HasAscender(char):
     return char in "bdfhkltṭ"
 
@@ -84,6 +139,9 @@ def ShrinkToCedilla(glyph):
     pen = glyph.glyphPen()
     target_accent.draw(pen)
     pen = None
+
+    # Compute accent root for proper anchoring
+    return (pt_root1.x + pt_root2.x) / 2
 
 # Ask user to select a source font for latin glyphs among the currently
 # opened fonts.
@@ -178,8 +236,14 @@ def BuildRomanization(unused, font):
 
     chars, seqs, special = RomanizationCodes()
 
+    # Sort chars so that the characters present in the source font come first
+    def in_source(code):
+        name = fontforge.nameFromUnicode(code)
+        return name in latin_font and latin_font[name].isWorthOutputting()
+    chars.sort(key=in_source, reverse=True)
+
     for code in chars:
-        MakeAccentedCharacter(font, code)
+        MakeAccentedCharacter(latin_font, font, code)
 
     for code in special:
         CopyGlyph(code, latin_font, font)
@@ -217,15 +281,20 @@ def MakeLowerAccent(accent_name, source_font,
         # The cedilla is connected to the glyph, so they were copied together.
         # We need to delete the glyph and leave just the cedilla itself
         if option == "cedilla":
-            ShrinkToCedilla(target_glyph)
+            cedilla_root = ShrinkToCedilla(target_glyph)
 
         # Move accent to the lower position (negative delta)
         delta_y = src_body.boundingBox()[1] - src_accent.boundingBox()[3] - descending_dist
         target_glyph.transform(psMat.translate(0, delta_y))
 
-        # center the resulting glyph
-        bb = target_glyph.boundingBox()
-        target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+        if option == "cedilla":
+            x_shift = -cedilla_root
+        else:
+            # center the resulting glyph
+            uns_bb = UnslantedBoundingBox(target_glyph)
+            x_shift = - (uns_bb[0] + uns_bb[2]) / 2
+
+        target_glyph.transform(psMat.translate(x_shift, 0))
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
@@ -270,8 +339,9 @@ def MakeUpperAccent(accent_name, source_font,
         utils.SetGlyphCommentProperty(target_glyph, "AscenderShift", ascending_dist)
 
         # center the resulting glyph
-        bb = target_glyph.boundingBox()
-        target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+        uns_bb = UnslantedBoundingBox(target_glyph)
+        x_shift = - (uns_bb[0] + uns_bb[2]) / 2
+        target_glyph.transform(psMat.translate(x_shift, 0))
         target_glyph.width = 0
 
         target_glyph.glyphname = accent_name
@@ -292,14 +362,15 @@ def ComputeAccentShifts(font, norm):
     x_height = font["x"].boundingBox()[3]
 
     # Horizontal accent position
-    base_bb = font[base_name].boundingBox()
-    x_lower_accent = (base_bb[2] + base_bb[0]) / 2
+    uns_base_bb = UnslantedBoundingBox(font[base_name])
+    x_lower_accent = (uns_base_bb[2] + uns_base_bb[0]) / 2
     x_upper_accent = x_lower_accent
 
     # For small characters with ascenders, place the accent over the ascender
     if HasAscender(norm[0]):
         base_contour = Contours(font[base_name])[-1]
-        true_points = [(p.x, p.y) for p in base_contour if p.on_curve]
+        uns_base_contour = utils.Unslant(base_contour, font.italicangle)
+        true_points = [(p.x, p.y) for p in uns_base_contour if p.on_curve]
         x_upper_accent = utils_cv.AscenderMeanX(true_points, x_height)
 
     # Vertical accent position
@@ -315,6 +386,8 @@ def ComputeAccentShifts(font, norm):
         is_lower_accent = (font[accent_name].boundingBox()[1] < 0)
         x_accent = x_lower_accent if is_lower_accent else x_upper_accent
 
+        x_accent -= y_accent * tan(font.italicangle * pi / 180)
+
         xy_accents.append([x_accent, y_accent, is_lower_accent])
 
     # Stack upper accents if necessary
@@ -325,19 +398,57 @@ def ComputeAccentShifts(font, norm):
 
         # shift the second accent up as appropriate
         xy_accents[1][1] += shift
+        xy_accents[1][0] -= shift * tan(font.italicangle * pi / 180)
 
     return xy_accents
 
-def MakeAccentedCharacter(font, code):
+def ShiftAccentsX(glyph, y_shift):
+    unistr = chr(glyph.unicode)
+    norm = unicodedata.normalize("NFD", unistr)
+    base_name, _ = CharNames(norm)
+
+    base_glyph = glyph.font[base_name]
+    base_bb = base_glyph.boundingBox()
+
+    # Copy foreground layer
+    l = glyph.layers[1]
+
+    # Transform accent contours only
+    trf = psMat.translate(0, y_shift)
+    for c in l:
+        if c.boundingBox()[1] < base_bb[1] - 1 or c.boundingBox()[3] > base_bb[3] + 1:
+            c.transform(trf)
+
+    pen = glyph.glyphPen()
+    l.draw(pen)
+    pen = None
+    glyph.width = base_glyph.width
+
+# By design, we start with copying existing characters, and then proceed to
+# building new characters from references.
+def MakeAccentedCharacter(latin_font, font, code):
+    # Get Unicode components by canonical decomposition
     unistr = chr(code)
+    norm = unicodedata.normalize("NFD", unistr)
+    base_name, accent_names = CharNames(norm)
 
     # Call recursively for upper-case character
     if unistr.islower():
-        MakeAccentedCharacter(font, ord(unistr.upper()))
+        MakeAccentedCharacter(latin_font, font, ord(unistr.upper()))
 
-    # Get Unicode components by canonical decomposition
-    norm = unicodedata.normalize("NFD", unistr)
-    base_name, accent_names = CharNames(norm)
+    if CopyGlyph(code, latin_font, font):
+        # Fix accent height. Note that CopyGlyph() always dereferences contours
+
+        # Accent contour
+        char_name = fontforge.nameFromUnicode(code)
+        accent_contour = Contours(font[char_name])[0]
+
+        # Accent height adjustment
+        height_fix = HeightFixes.Get(norm[0],
+            accent_names[0], accent_contour.boundingBox()[1])
+        
+        ShiftAccentsX(font[char_name], height_fix)
+        return
 
     xy_accents = ComputeAccentShifts(font, norm)
 
