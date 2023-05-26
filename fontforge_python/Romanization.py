@@ -501,8 +501,8 @@ def CopyAndCutout(source_char, target_char, cutting_bb):
 
     # Build half-ring contour by intersection
     target_char.intersect()
-    target_char.left_side_bearing = source_char.left_side_bearing
-    target_char.right_side_bearing = source_char.right_side_bearing
+    target_char.left_side_bearing = int(source_char.left_side_bearing)
+    target_char.right_side_bearing = int(source_char.right_side_bearing)
 
 def BuildHalfRings(font):
     # We expect some ring to be there
