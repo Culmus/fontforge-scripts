@@ -73,7 +73,7 @@ def AddNarrowHataf(font, hataf_meteg, narrow_hataf):
 
     # center the resulting glyph
     bb = narrow_hataf_glyph.boundingBox()
-    narrow_hataf_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+    narrow_hataf_glyph.left_side_bearing = int(bb[0] - bb[2]) // 2
     narrow_hataf_glyph.width = 0
 
 # Build new glyph by picking specific contours from an existing glyph. The contours are
@@ -95,7 +95,7 @@ def AddByPartialCopy(font, source, target, components):
 
     # center the resulting glyphs
     bb = target_glyph.boundingBox()
-    target_glyph.left_side_bearing = (bb[0] - bb[2]) / 2
+    target_glyph.left_side_bearing = int(bb[0] - bb[2]) // 2
     target_glyph.width = 0
 
 def CreatePrecomposedGlyphs(unused, font):
