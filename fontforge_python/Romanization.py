@@ -124,7 +124,8 @@ def ShrinkToCedilla(glyph):
     target_accent = glyph.foreground[0]
 
     # Cedilla root points are the ones nearest to the zero baseline
-    pts = (pt for pt in target_accent if pt.on_curve)
+    pts = (pt for pt in target_accent
+                     if pt.on_curve and pt.type == fontforge.splineCorner)
     pts = sorted(pts, key=lambda pt: abs(pt.y))
     pt_root1, pt_root2 = pts[0], pts[1]
 
@@ -274,9 +275,9 @@ def MakeLowerAccent(accent_name, source_font,
         target_glyph.clear()
 
         # Copy accent from source glyph
-        pen = target_glyph.glyphPen()
-        src_accent.draw(pen)
-        pen = None
+        l = fontforge.layer(is_quadratic=src_accent.is_quadratic)
+        l += src_accent
+        target_glyph.setLayer(l, 1)
 
         # The cedilla is connected to the glyph, so they were copied together.
         # We need to delete the glyph and leave just the cedilla itself
