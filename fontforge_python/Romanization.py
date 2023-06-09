@@ -78,6 +78,10 @@ def CopyGlyph(code, source_font, target_font, copy_width=True):
         source_font.changed = changed
 
     target_char.glyphname = glyph_name
+
+    # In some italic derived fonts all Latic characters are shifted horizontally
+    x_shift = target_font["A"].boundingBox()[0] - source_font["A"].boundingBox()[0]
+    target_char.left_side_bearing = int(source_font[glyph_name].left_side_bearing + x_shift)
     if copy_width:
         target_char.width = source_font[glyph_name].width
 
