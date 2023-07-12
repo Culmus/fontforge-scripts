@@ -112,7 +112,7 @@ def CreatePrecomposedGlyphs(unused, font):
     def ToDo(name):
         return (choice == RECREATE_ALL or name not in font or font[name].foreground.isEmpty())
 
-    if any(not ToDo(c) for c in ["hatafsegol.narrow", "hatafpatah.narrow", "hatafqamats.narrow",
+    if any(not ToDo(c) for c in ["meteg.right", "hatafsegol.narrow", "hatafpatah.narrow", "hatafqamats.narrow",
                                 "segol.narrow", "tsere.narrow", "patah.narrow", "qamats.narrow"]):
         choice = fontforge.ask("", "Some narrow diacritics are present",
                                tuple(value for (key, value) in sorted(CHOICE_MAP.items())),
@@ -135,7 +135,8 @@ def CreatePrecomposedGlyphs(unused, font):
 
     # Right-side meteg is identical to the ordinary meteg,
     # but bears different anchors
-    AddByPartialCopy(font, "afii57839", "meteg.right", [0])
+    if ToDo("meteg.right"):
+        AddByPartialCopy(font, "afii57839", "meteg.right", [0])
 
     if ToDo("hatafsegol.narrow"):
         AddNarrowHataf(font, "uniE806", "hatafsegol.narrow")
