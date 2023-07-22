@@ -68,3 +68,11 @@ def Unslant(contour, slanting_angle):
         pt.x += pt.y * tan(slanting_angle * pi / 180)
 
     return unslanted
+
+def IsMonospace(font):
+    # Compare width of a narrow character VAV and a wide character SHIN:
+    vav_width = font["afii57669"].width
+    shin_width = font["afii57689"].width
+    is_mono = (abs(shin_width - vav_width) < shin_width / 100)
+
+    return is_mono

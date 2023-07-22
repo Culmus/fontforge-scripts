@@ -121,9 +121,10 @@ def CreatePrecomposedGlyphs(unused, font):
     if choice == CANCEL:
         return
 
-    AddConsonantCouple(font, "afii57669", "afii57669", "afii57716") # vav-vav
-    AddConsonantCouple(font, "afii57669", "afii57673", "afii57717") # vav-yod
-    AddConsonantCouple(font, "afii57673", "afii57673", "afii57718") # yod-yod
+    if not utils.IsMonospace(font):
+        AddConsonantCouple(font, "afii57669", "afii57669", "afii57716") # vav-vav
+        AddConsonantCouple(font, "afii57669", "afii57673", "afii57717") # vav-yod
+        AddConsonantCouple(font, "afii57673", "afii57673", "afii57718") # yod-yod
 
     AddConsonantVowel(font, "afii57669", "afii57806", "uniE801") # vav-holam
     AddConsonantVowel(font, "afii57673", "afii57793", "uniFB1D") # yod-hiriq
@@ -132,6 +133,11 @@ def CreatePrecomposedGlyphs(unused, font):
     AddConsonantVowel(font, "afii57665", "afii57841", "uniFB4C") # beth-rafe
     AddConsonantVowel(font, "afii57675", "afii57841", "uniFB4D") # kaf-rafe
     AddConsonantVowel(font, "afii57684", "afii57841", "uniFB4E") # pe-rafe
+
+    AddConsonantCouple(font, "afii57689", "afii57804", "uniFB2A") # shin-dot
+    AddConsonantCouple(font, "afii57689", "afii57803", "uniFB2B") # sin-dot
+    AddConsonantCouple(font, "uniFB49", "afii57804", "uniFB2C") # shindagesh-dot
+    AddConsonantCouple(font, "uniFB49", "afii57803", "uniFB2D") # sindagesh-dot
 
     # Right-side meteg is identical to the ordinary meteg,
     # but bears different anchors
