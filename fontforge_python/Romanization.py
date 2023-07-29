@@ -489,18 +489,17 @@ def BuildSmallSchwa(font):
 
     return True
 
-def CopyAndCutout(source_char, target_char, cutting_bb):
+def CopyAndCutout(source_char, target_char, cutting_contour):
     target_char.clear()
 
     # Copy ring into half ring
     pen = target_char.glyphPen()
     source_char.draw(pen)
 
-    # Draw rectangle over the cutting bounding box
-    pen.moveTo((cutting_bb[0], cutting_bb[1]))
-    pen.lineTo((cutting_bb[0], cutting_bb[3]))
-    pen.lineTo((cutting_bb[2], cutting_bb[3]))
-    pen.lineTo((cutting_bb[2], cutting_bb[1]))
+    # Draw the cutting contour
+    pen.moveTo(cutting_contour[0])
+    for pt in cutting_contour[1:]:
+        pen.lineTo(pt)
     pen.closePath()                       # end the contour
     pen = None
 
@@ -528,21 +527,30 @@ def BuildHalfRings(font):
 
     ring_bb = ring_char.boundingBox()
 
+    # Cutting line
+    italic_tan = -tan(font.italicangle * pi / 180)
+    cut_upper_pt = ((ring_bb[0] + ring_bb[2] + (ring_bb[3] - ring_bb[1]) * italic_tan) / 2, ring_bb[3] + 1)
+    cut_lower_pt = ((ring_bb[0] + ring_bb[2] - (ring_bb[3] - ring_bb[1]) * italic_tan) / 2, ring_bb[1] - 1)
+
     # Copy ring and keep the left half
     left_half_ring_char = font.createChar(0x02BF)
-
-    left_half_bb = (ring_bb[0] - 1, ring_bb[1] - 1,
-                    (ring_bb[0] + ring_bb[2]) / 2, ring_bb[3] + 1)
-
-    CopyAndCutout(ring_char, left_half_ring_char, left_half_bb)
+    left_half_contour = (
+        (ring_bb[0] - 1, ring_bb[1] - 1),
+        (ring_bb[0] - 1, ring_bb[3] + 1),
+        cut_upper_pt,
+        cut_lower_pt
+    )
+    CopyAndCutout(ring_char, left_half_ring_char, left_half_contour)
 
     # Copy ring and keep the right half
     right_half_ring_char = font.createChar(0x02BE)
-    
-    right_half_bb = ((ring_bb[0] + ring_bb[2]) / 2, ring_bb[1] - 1,
-                     ring_bb[2] + 1, ring_bb[3] + 1)
-
-    CopyAndCutout(ring_char, right_half_ring_char, right_half_bb)
+    right_half_contour = (
+        (ring_bb[2] + 1, ring_bb[3] + 1),
+        (ring_bb[2] + 1, ring_bb[1] - 1),
+        cut_lower_pt,
+        cut_upper_pt
+    )
+    CopyAndCutout(ring_char, right_half_ring_char, right_half_contour)
 
 def AddBaseAnchors(font):
     upper_accent = "acutecomb"
