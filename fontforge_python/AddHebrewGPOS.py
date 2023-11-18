@@ -37,8 +37,15 @@ def AddHebrewGPOS(unused, font):
     lookups = font.gpos_lookups
 
     for l in lookups:
-        if l[0] != "_":  # Custom persistent lookups shall start with '_', leave them as is.
-            font.removeLookup(l, True)
+        # Custom persistent lookups shall start with '_', leave them as is.
+        if l[0] == "_":
+            continue
+
+        # Don't touch kerning
+        if font.getLookupInfo(l)[0] == "gpos_pair":
+            continue
+
+        font.removeLookup(l, True)
 
     # Set for each diacritic its appropriate anchor
     for vowel_class, vowels in InitHebrewGlyphData.GetVowelEquiv().items():
